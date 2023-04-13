@@ -1,0 +1,12 @@
+GET http://localhost:3000/api/blogs
+
+###
+POST http://localhost:3000/api/blogs HTTP/1.1
+content-type: application/json
+
+{
+    "title": "Part 4",
+    "author": "Rachit Patel",
+    "url": "http://www.certificatepart4.comm",
+    "likes": 15
+}
