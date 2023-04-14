@@ -50,9 +50,33 @@ const mostBlogs = (blogs) => {
     }
 }
 
+const mostLikes = (blogs) => {
+    let authorArray = blogs.map(b => b.author)
+    let authorMap = {}
+    let maxBlogsAuthor = authorArray[0], maxCount = 1
+    for(let i=0; i<authorArray.length; i++) {
+        let author = authorArray[i]
+
+        if(authorMap[author] == null)
+            authorMap[author] = blogs[i].likes
+        else
+            authorMap[author] += blogs[i].likes
+
+        if(authorMap[author]> maxCount){
+            maxBlogsAuthor = author
+            maxCount = authorMap[author]
+        }
+    }
+    return {
+        author: maxBlogsAuthor,
+        likes: maxCount
+    }
+}
+
 module.exports = {
   dummy,
   totalLikes,
   favouriteBlog,
-  mostBlogs
+  mostBlogs,
+  mostLikes
 }
