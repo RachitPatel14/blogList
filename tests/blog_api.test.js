@@ -86,6 +86,36 @@ test('verify the property', async () => {
         expect(response.body).toHaveLength(helper.initialBlog.length)
     })
 
+    test('deletion of a blog', async () => {
+        const blogsAtStart = await helper.blogsInDb()
+        const blogToDelete = blogsAtStart[0]
+
+        await api
+            .delete(`/api/blogs/${blogToDelete.id}`)
+            .expect(204)
+
+        const blogsAtEnd = await helper.blogsInDb()
+        expect(blogsAtEnd).toHaveLength(
+            helper.initialBlog.length-1
+            )
+        const titles = blogsAtEnd.map(b => b.title)
+
+        expect(titles).not.toContain(blogToDelete.title)
+    })
+
+    test('update likes', async () => {
+        const blogAtStart = await helper.blogsInDb()
+        const blogToUpdate = blogAtStart[0]
+        blogToUpdate.likes = 100
+        await api
+            .put(`/api/blogs/${blogToUpdate.id}`)
+            .send(blogToUpdate)
+
+        const blogsAtEnd = await helper.blogsInDb()
+        const updatedBlog = blogsAtEnd.filter(b => b.id === blogToUpdate.id)
+        expect(updatedBlog[0].likes).toBe(100)
+    })
+
 afterAll(async () => {
     await mongoose.connection.close()
 })
