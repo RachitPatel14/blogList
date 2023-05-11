@@ -1,6 +1,6 @@
 
 const logger = require('./logger')
-
+const User  = require('../models/user')
 const errorHandler = (error, request, response, next) => {
     logger.error(error.message)
 
@@ -19,11 +19,20 @@ const errorHandler = (error, request, response, next) => {
   const tokenExtractor = (request, response, next) => {
     const authorization = request.get('authorization')
     if(authorization && authorization.startsWith('Bearer ')) {
-      return request.token = authorization.replace('Bearer ', '')
+      const bearerToken = authorization.replace('Bearer ', '')
+      request.token = bearerToken
+      next()
+    }else{
+      response.sendStatus(403)
     }
-    next()
   }
 
-    module.exports = {
-      errorHandler, tokenExtractor
+  const userExtractor = (request, response, next) => {
+    const id = request.body.user
+    const user = User.findById(id)
+    request.user = user
+    next()
+  }
+  module.exports = {
+      errorHandler, tokenExtractor, userExtractor
     }
