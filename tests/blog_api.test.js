@@ -10,7 +10,10 @@ const helper = require('./test_helper')
 describe('tests for blogs', () => {
     beforeEach(async () => {
         await Blog.deleteMany({})
-
+        await User.deleteMany({})
+        const passwordHash = await bcrypt.hash('skertek', 10)
+        const user = new User({username: 'root', passwordHash})
+        await user.save()
         for (let blog of helper.initialBlog) {
             let blogObject = new Blog(blog)
             await blogObject.save()
@@ -33,23 +36,32 @@ describe('tests for blogs', () => {
             expect(id).not.toBe(json)
         }
     })
-    test('post new blog', async () => {
+    test('post new blog with login', async () => {
         const newBlog = {
             title: 'React development for beginner',
-            author: 'rachit patel',
+            author: 'root',
             url: 'www.reactdevelopment/beginner.com',
             likes: 15,
         }
-    
+        const loginData = await api 
+            .post('/api/login')
+            .send({
+                "username": "root",
+                "password": "skertek"
+            })
+            .expect(200)
+        const token = loginData.body.token
+
         await api
             .post('/api/blogs')
+            .set("Authorization", `Bearer ${token}`)
             .send(newBlog)
             .expect(201)
             .expect('Content-Type', /application\/json/)
     
-        const response = await api.get('/api/blogs')
+        const response = await api.get('/api/blogs').set("Authorization", `Bearer ${token}`)
         const titles = response.body.map(b => b.title)
-    
+        
         expect(response.body).toHaveLength(helper.initialBlog.length + 1)
         expect(titles).toContain(
             'React development for beginner'
@@ -62,13 +74,23 @@ describe('tests for blogs', () => {
             author: 'rachit patel',
             url: 'www.reactdevelopment/beginner.com',
         }
+        const loginData = await api 
+            .post('/api/login')
+            .send({
+                "username": "root",
+                "password": "skertek"
+            })
+            .expect(200)
+        const token = loginData.body.token
+
         await api
             .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}`)
             .send(newBlog)
             .expect(201)
             .expect('Content-Type', /application\/json/)
     
-        const response = await api.get('/api/blogs')
+        const response = await api.get('/api/blogs').set('Authorization', `Bearer ${token}`)
         const likes = response.body.map(b => b.likes)
     
         expect(response.body).toHaveLength(helper.initialBlog.length + 1)
@@ -81,11 +103,20 @@ describe('tests for blogs', () => {
             author: 'ira desai',
             likes: 120
         }
+        const loginData = await api 
+            .post('/api/login')
+            .send({
+                "username": "root",
+                "password": "skertek"
+            })
+            .expect(200)
+        const token = loginData.body.token
         await api
             .post('/api/blogs')
+            .set('Authorization', `Bearer ${token}`)
             .send(newBlog)
-            .expect(400)
-        const response = await api.get('/api/blogs')
+            .expect(401)
+        const response = await api.get('/api/blogs').set('Authorization', `Bearer ${token}`)
         expect(response.body).toHaveLength(helper.initialBlog.length)
     })
 
