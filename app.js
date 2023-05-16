@@ -22,7 +22,7 @@ app.use(cors())
 app.use(express.json())
 app.use('/api/login', loginRouter)
 app.use(midlleware.tokenExtractor)
-app.use('/api/blogs', blogsRouter)
+app.use('/api/blogs', midlleware.userExtractor, blogsRouter)
 app.use('/api/users', userRouter)
 
 
